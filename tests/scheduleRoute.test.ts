@@ -3,6 +3,11 @@ import os from 'os';
 import path from 'path';
 import request from 'supertest';
 
+// requireAuth gates every /api route; stub it so these route unit tests reach the handlers.
+jest.mock('../src/middleware/requireAuth', () => ({
+  requireAuth: (_req: unknown, _res: unknown, next: () => void): void => next(),
+}));
+
 // Mock tarService to avoid shelling out to tar.
 jest.mock('../src/services/tarService', () => ({
   createArchive: jest.fn().mockResolvedValue({ path: 'mocked', output: '' }),

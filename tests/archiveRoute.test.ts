@@ -3,6 +3,11 @@ import os from 'os';
 import path from 'path';
 import request from 'supertest';
 
+// requireAuth gates every /api route; stub it so these route unit tests reach the handlers.
+jest.mock('../src/middleware/requireAuth', () => ({
+  requireAuth: (_req: unknown, _res: unknown, next: () => void): void => next(),
+}));
+
 jest.mock('../src/services/archiveService', () => ({
   loadArchiveConfig: jest.fn().mockReturnValue({
     githubToken: 'tok', baseDir: '/arc', defaultFrequency: 'daily',
