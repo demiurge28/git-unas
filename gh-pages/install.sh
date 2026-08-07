@@ -1,12 +1,12 @@
 #!/bin/sh
 # install.sh — one-line installer for git-unas.
 #
-#   curl -fsSL https://demiurge28.github.io/git-unas/install.sh | sh
+#   curl -fsSL https://deftai.github.io/git-unas/install.sh | sh
 #
 # Safe to re-run; idempotent.
 set -e
 
-REPO_URL="https://github.com/demiurge28/git-unas"
+REPO_URL="https://github.com/deftai/git-unas"
 RELEASES_URL="${REPO_URL}/releases/latest/download"
 DATA_DIR=/data/git-unas
 
@@ -32,7 +32,7 @@ esac
 # ---- Download and install latest .deb ----
 echo "==> Fetching latest git-unas release..."
 # Use GitHub API to discover the latest version tag.
-LATEST_TAG=$(curl -fsSL "https://api.github.com/repos/demiurge28/git-unas/releases/latest" \
+LATEST_TAG=$(curl -fsSL "https://api.github.com/repos/deftai/git-unas/releases/latest" \
     | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])" 2>/dev/null || echo "")
 
 if [ -z "$LATEST_TAG" ]; then
@@ -45,8 +45,14 @@ fi
 
 echo "==> Downloading ${DEB_URL}..."
 curl -fsSL -o /tmp/git-unas.deb "$DEB_URL"
-echo "==> Installing..."
-dpkg -i /tmp/git-unas.deb
+echo "==> Installing (resolving dependencies)..."
+apt-get update || true
+# apt-get resolves runtime deps (git and its sub-deps) from the repos; fall back
+# to dpkg + fix-broken if the apt local-deb path is unavailable.
+apt-get install -y /tmp/git-unas.deb || {
+    dpkg -i /tmp/git-unas.deb || true
+    apt-get install -f -y || true
+}
 rm -f /tmp/git-unas.deb
 
 # ---- Persistent recovery layer ----

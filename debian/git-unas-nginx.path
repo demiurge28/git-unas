@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch UniFi nginx site config; restore git-unas block on change
+
+[Path]
+# UniFi OS regenerates this file on updates/restarts, dropping our block.
+PathModified=/data/unifi-core/config/http/site-local-ip.conf
+Unit=git-unas-nginx.service
+
+[Install]
+WantedBy=multi-user.target

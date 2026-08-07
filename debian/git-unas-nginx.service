@@ -1,0 +1,13 @@
+[Unit]
+Description=Restore git-unas nginx proxy block
+After=unifi-core.service
+# Only run when the injector is present (skips cleanly after a firmware wipe).
+ConditionPathExists=/usr/libexec/git-unas/nginx-inject.sh
+
+[Service]
+Type=oneshot
+# Invoke through /bin/sh so success never depends on the script's +x bit or shebang.
+ExecStart=/bin/sh /usr/libexec/git-unas/nginx-inject.sh
+
+[Install]
+WantedBy=multi-user.target

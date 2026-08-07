@@ -1,6 +1,6 @@
 [Unit]
 Description=git-unas admin server
-Documentation=https://github.com/demiurge28/git-unas
+Documentation=https://github.com/deftai/git-unas
 After=network.target
 
 [Service]

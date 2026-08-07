@@ -11,6 +11,10 @@ case "$1" in
         systemctl stop git-unas.service 2>/dev/null || true
         systemctl disable git-unas.service 2>/dev/null || true
 
+        # Disable the self-healing units BEFORE stripping nginx, otherwise the
+        # path watcher would see the strip and immediately re-inject the block.
+        systemctl disable --now git-unas-nginx.path git-unas-nginx.service 2>/dev/null || true
+
         # Strip nginx block and reload.
         if [ -x "$LIBEXEC/nginx-strip.sh" ]; then
             "$LIBEXEC/nginx-strip.sh" || true

@@ -71,17 +71,27 @@ chmod 0755 "${STAGE}/usr/bin/git-unas"
 mkdir -p "${STAGE}/lib/systemd/system"
 cp "${REPO_ROOT}/debian/git-unas.service" \
    "${STAGE}/lib/systemd/system/git-unas.service"
+# Self-healing nginx units: restore the proxy block whenever UniFi regenerates
+# its site config (path unit) and once at boot (service).
+cp "${REPO_ROOT}/debian/git-unas-nginx.service" \
+   "${STAGE}/lib/systemd/system/git-unas-nginx.service"
+cp "${REPO_ROOT}/debian/git-unas-nginx.path" \
+   "${STAGE}/lib/systemd/system/git-unas-nginx.path"
 
 # /etc/default/git-unas  (conffile)
 mkdir -p "${STAGE}/etc/default"
 cp "${REPO_ROOT}/debian/default" "${STAGE}/etc/default/git-unas"
 
-# /usr/libexec/git-unas/  (nginx scripts)
+# /usr/libexec/git-unas/  (nginx scripts + cached recovery installer)
 mkdir -p "${STAGE}/usr/libexec/git-unas"
 cp "${REPO_ROOT}/scripts/nginx-inject.sh" \
    "${STAGE}/usr/libexec/git-unas/nginx-inject.sh"
 cp "${REPO_ROOT}/scripts/nginx-strip.sh" \
    "${STAGE}/usr/libexec/git-unas/nginx-strip.sh"
+# Ship the installer so postinst can refresh the /data recovery cache with the
+# current (dependency-resolving) version.
+cp "${REPO_ROOT}/gh-pages/install.sh" \
+   "${STAGE}/usr/libexec/git-unas/install.sh"
 chmod 0755 "${STAGE}/usr/libexec/git-unas/"*.sh
 
 # DEBIAN/ control + maintainer scripts

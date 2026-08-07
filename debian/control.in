@@ -3,9 +3,9 @@ Version: @VERSION@
 Section: net
 Priority: optional
 Architecture: @ARCH@
-Maintainer: demiurge28 <@MAINTAINER_EMAIL@>
+Maintainer: deftai <@MAINTAINER_EMAIL@>
 Depends: libc6, systemd, git
-Homepage: https://github.com/demiurge28/git-unas
+Homepage: https://github.com/deftai/git-unas
 Description: Git clone, tar, and encryption admin UI for Ubiquiti UNAS
  A Node.js web admin page served on 127.0.0.1:7892 and exposed
  via nginx at https://<device>/git-unas/. Provides a browser UI
