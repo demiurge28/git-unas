@@ -2,6 +2,7 @@ import * as cron from 'node-cron';
 import fs from 'fs';
 import path from 'path';
 import { createArchive } from './tarService';
+import { notifyRun } from './notifyService';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -190,6 +191,12 @@ export function nextRunDate(config: ScheduleConfig): Date | null {
 let _task: cron.ScheduledTask | null = null;
 let _lastRun: { timestamp: string; status: 'ok' | 'error'; message: string } | null = null;
 
+/** Record a backup run outcome (updates lastRun) and emit a Slack notification. */
+export function recordScheduleOutcome(status: 'ok' | 'error', message: string): void {
+  _lastRun = { timestamp: new Date().toISOString(), status, message };
+  void notifyRun('Scheduled Backup', { status, message });
+}
+
 export function startScheduler(config: ScheduleConfig): void {
   stopScheduler();
   if (!config.enabled || !config.source || !config.backupDir) return;
@@ -198,17 +205,9 @@ export function startScheduler(config: ScheduleConfig): void {
   _task = cron.schedule(expr, async () => {
     try {
       const dest = await runBackup(config);
-      _lastRun = {
-        timestamp: new Date().toISOString(),
-        status: 'ok',
-        message: `Backup written to ${dest}`,
-      };
+      recordScheduleOutcome('ok', `Backup written to ${dest}`);
     } catch (err) {
-      _lastRun = {
-        timestamp: new Date().toISOString(),
-        status: 'error',
-        message: err instanceof Error ? err.message : String(err),
-      };
+      recordScheduleOutcome('error', err instanceof Error ? err.message : String(err));
     }
   });
 }

@@ -10,6 +10,7 @@ import { bitwardenRouter } from './routes/bitwarden';
 import { flyRouter } from './routes/fly';
 import { browseRouter } from './routes/browse';
 import { authRouter } from './routes/auth';
+import { slackRouter } from './routes/slack';
 import { requireAuth } from './middleware/requireAuth';
 import { loadConfig, startScheduler } from './services/scheduleService';
 import { loadArchiveConfig, startArchiveScheduler } from './services/archiveService';
@@ -57,6 +58,7 @@ app.get('/api/status', (_req, res) => {
 app.use('/api/bitwarden', bitwardenRouter);
 app.use('/api/fly', flyRouter);
 app.use('/api/browse', browseRouter);
+app.use('/api/slack', slackRouter);
 
 // Serve admin UI
 // PUBLIC_DIR env var overrides the default (set in /etc/default/git-unas when installed as .deb)

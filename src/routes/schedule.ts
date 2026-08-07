@@ -7,6 +7,7 @@ import {
   getLastRun,
   nextRunDate,
   runBackup,
+  recordScheduleOutcome,
   type ScheduleConfig,
   type DayOfWeek,
 } from '../services/scheduleService';
@@ -85,9 +86,11 @@ scheduleRouter.post('/run', async (_req: Request, res: Response) => {
   try {
     const dest = await runBackup(config);
     const backups = listBackups(config.backupDir);
+    recordScheduleOutcome('ok', `Backup written to ${dest}`);
     res.json({ success: true, destination: dest, backups });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    recordScheduleOutcome('error', message);
     res.status(500).json({ error: message });
   }
 });

@@ -6,6 +6,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { listOrgRepos } from './githubService';
 import { encryptFile } from './encryptService';
+import { notifyRun } from './notifyService';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -469,6 +470,13 @@ function saveRunRecord(record: RunRecord): void {
   existing.unshift(record); // newest first
   if (existing.length > MAX_RUNS) existing.length = MAX_RUNS;
   fs.writeFileSync(RUNS_PATH, JSON.stringify(existing, null, 2));
+
+  const errNote = record.errors ? `, ${record.errors} errors` : '';
+  void notifyRun('GitHub Archive', {
+    status: record.status,
+    message: `${record.label} — ${record.succeeded}/${record.total} archived${errNote}`,
+    durationMs: record.durationMs,
+  });
 }
 
 // ---------------------------------------------------------------------------

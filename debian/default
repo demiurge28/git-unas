@@ -29,6 +29,9 @@ AUTH_USERS_PATH=/etc/git-unas/users.json
 AUTH_LOG_PATH=/etc/git-unas/auth-log.json
 # AUTH_SECRET is generated on first install — see /etc/default/git-unas.local
 
+# Slack notifications (run success/failure messages)
+SLACK_CONFIG_PATH=/etc/git-unas/slack-config.json
+
 # Bitwarden vault archive
 BW_ARCHIVE_CONFIG_PATH=/etc/git-unas/bw-archive-config.json
 BW_ARCHIVE_RUNS_PATH=/etc/git-unas/bw-archive-runs.json

@@ -9,6 +9,7 @@ import {
   getFlyVolumes,
   type FlyArchiveSnapshot,
 } from './flyService';
+import { notifyRun } from './notifyService';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -155,6 +156,12 @@ function saveFlyArchiveRun(run: FlyArchiveRun): void {
   runs.unshift(run);
   if (runs.length > MAX_RUNS) runs.length = MAX_RUNS;
   fs.writeFileSync(RUNS_PATH, JSON.stringify(runs, null, 2));
+
+  void notifyRun('Fly Archive', {
+    status: run.status,
+    message: run.message,
+    durationMs: run.durationMs,
+  });
 }
 
 // ---------------------------------------------------------------------------

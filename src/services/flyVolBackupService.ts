@@ -15,6 +15,7 @@ import {
   loadFlyArchiveConfig,
   type FlyArchiveFrequency,
 } from './flyArchiveService';
+import { notifyRun } from './notifyService';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -125,6 +126,12 @@ function saveFlyVolBackupRun(run: FlyVolBackupRun): void {
   runs.unshift(run);
   if (runs.length > MAX_RUNS) runs.length = MAX_RUNS;
   fs.writeFileSync(RUNS_PATH, JSON.stringify(runs, null, 2));
+
+  void notifyRun('Fly Volume Backup', {
+    status: run.status,
+    message: run.message,
+    durationMs: run.durationMs,
+  });
 }
 
 // ---------------------------------------------------------------------------

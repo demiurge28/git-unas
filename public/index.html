@@ -671,6 +671,25 @@ Mirror GitHub repos and orgs to the NAS automatically. Uses <code>git clone --mi
 </div>
 </div>
 
+<!-- Notifications (Slack) -->
+<div class="card"><h2>Notifications (Slack)</h2>
+<p style="font-size:12px;color:#9aa0a6;margin:0 0 10px 0">
+Post a Slack message whenever a scheduled job (backup, GitHub / Bitwarden / Fly archive, volume backup) succeeds or fails. Uses a Slack <a href="https://api.slack.com/messaging/webhooks" target="_blank" rel="noopener" style="color:#6272a4">Incoming Webhook</a>.</p>
+<div class="kv" id="slack-status-kv" style="margin-bottom:8px"></div>
+<div class="row"><label>Webhook URL</label>
+  <input type="password" id="slack-webhook" placeholder="https://hooks.slack.com/services/…" autocomplete="off"></div>
+<div class="row"><label>Enable</label>
+  <select id="slack-enabled"><option value="false">Disabled</option><option value="true">Enabled</option></select></div>
+<div class="row"><label>Notify on success</label>
+  <select id="slack-on-success"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div class="row"><label>Notify on failure</label>
+  <select id="slack-on-failure"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div class="row">
+  <button onclick="saveSlack()">Save</button>
+  <button onclick="testSlack()" style="background:#111621;border-color:#3a4255;color:#c6c9cc">▶ Send test</button>
+</div>
+<div class="msg" id="slack-msg"></div></div>
+
 <!-- Admin Panel -->
 <div class="card" id="admin-card" style="display:none"><h2>Administration</h2>
 <div style="margin-bottom:12px">
@@ -1895,6 +1914,52 @@ async function flyVolBackupRun() {
   spin(false);
 }
 
+// ---- Notifications (Slack) ----
+async function loadSlack() {
+  try {
+    const r = await fetch('api/slack');
+    const c = await r.json();
+    if (!r.ok) return;
+    document.getElementById('slack-enabled').value = String(!!c.enabled);
+    document.getElementById('slack-on-success').value = String(c.notifyOnSuccess !== false);
+    document.getElementById('slack-on-failure').value = String(c.notifyOnFailure !== false);
+    document.getElementById('slack-webhook').placeholder = c.webhookSet
+      ? 'webhook stored — leave blank to keep'
+      : 'https://hooks.slack.com/services/…';
+    const state = c.enabled
+      ? '<span class="pill green">enabled</span>'
+      : '<span class="pill grey">disabled</span>';
+    const hook = c.webhookSet
+      ? '<span class="pill green">webhook set</span>'
+      : '<span class="pill amber">no webhook</span>';
+    document.getElementById('slack-status-kv').innerHTML =
+      `<span class="k">Status</span><span>${state}</span><span class="k">Webhook</span><span>${hook}</span>`;
+  } catch {}
+}
+
+async function saveSlack() {
+  const webhookUrl = document.getElementById('slack-webhook').value.trim();
+  const body = {
+    enabled: document.getElementById('slack-enabled').value === 'true',
+    notifyOnSuccess: document.getElementById('slack-on-success').value === 'true',
+    notifyOnFailure: document.getElementById('slack-on-failure').value === 'true',
+  };
+  if (webhookUrl) body.webhookUrl = webhookUrl;
+  const r = await post('api/slack', body);
+  if (r.ok) { document.getElementById('slack-webhook').value = ''; loadSlack(); }
+  msg('slack-msg', r.ok ? 'Saved.' : (r.data.error || 'Failed'), r.ok);
+}
+
+async function testSlack() {
+  const webhookUrl = document.getElementById('slack-webhook').value.trim() || undefined;
+  spin(true, 'Sending test message…');
+  try {
+    const r = await post('api/slack/test', webhookUrl ? { webhookUrl } : {});
+    msg('slack-msg', r.ok ? 'Test message sent — check your Slack channel.' : (r.data.error || 'Failed'), r.ok);
+  } catch (e) { msg('slack-msg', 'Request failed: ' + e, false); }
+  spin(false);
+}
+
 // ---- Authentication ----
 let _currentUser = null;
 
@@ -1942,6 +2007,7 @@ function appInit() {
   bwArchLoad();
   flyArchLoad();
   flyVolBackupLoad();
+  loadSlack();
 }
 
 async function doSetup() {

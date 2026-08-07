@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { runBw, getBwStatus, unlockVault, getSessionKey } from './bitwardenService';
+import { notifyRun } from './notifyService';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -128,6 +129,12 @@ function saveBwArchiveRun(run: BwArchiveRun): void {
   runs.unshift(run);
   if (runs.length > MAX_RUNS) runs.length = MAX_RUNS;
   fs.writeFileSync(RUNS_PATH, JSON.stringify(runs, null, 2));
+
+  void notifyRun('Bitwarden Archive', {
+    status: run.status,
+    message: run.message,
+    durationMs: run.durationMs,
+  });
 }
 
 // ---------------------------------------------------------------------------
